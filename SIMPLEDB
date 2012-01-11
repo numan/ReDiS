@@ -1,0 +1,58 @@
+# SimpleDB
+#
+# We use SimpleDB for administrative purposes. There is not much tooling,
+# and we prefer to use the command line script form Eric, on top of Amazon's
+# own perl library. There is on flaw though, we can't specify the region.
+# We patch this, and add the necessary environment variables to the rc.
+# 
+# This is an install log, not an install script. Run it by hand, one by one.
+
+# to remove all the BS questions
+rm /etc/perl/CPAN/Config.pm
+
+perl -MCPAN -e 'install Digest::SHA'
+perl -MCPAN -e 'install XML::Simple'
+perl -MCPAN -e 'install Bundle::LWP'
+
+apt-get install libssl-dev
+perl -MCPAN -e 'install Crypt::SSLeay'
+
+perl -MCPAN -e 'install Getopt::Long'
+perl -MCPAN -e 'install Pod::Usage'
+perl -MCPAN -e 'install Digest::SHA1'
+perl -MCPAN -e 'install Digest::HMAC'
+
+wget http://aws-libraries.s3.amazonaws.com/perl/AmazonSimpleDB/2009-04-15/AmazonSimpleDB-2009-04-15-perl-library.zip
+unzip AmazonSimpleDB-2009-04-15-perl-library.zip
+sitelib=$(perl -MConfig -le 'print $Config{sitelib}')
+cp -r AmazonSimpleDB-*-perl-library/src/Amazon $sitelib
+curl -Lo /usr/local/bin/simpledb http://simpledb-cli.notlong.com
+chmod +x /usr/local/bin/simpledb
+
+# make sure we use the closest SimpleDB (or just the one we want),
+# not the default
+echo '--- simpledb.org2011-06-15 04:55:20.000000000 +0000
++++ /usr/local/bin/simpledb 2011-06-15 05:09:56.000000000 +0000
+@@ -245,6 +245,7 @@
+ my $help        = 0;
+ my $aws_access_key_id     = $ENV{AWS_ACCESS_KEY_ID};
+ my $aws_secret_access_key = $ENV{AWS_SECRET_ACCESS_KEY};
++my $sdb_service_url       = $ENV{SDB_SERVICE_URL};
+ my $replace               = 0;
+ my $max                   = undef;
+ my $separator             = '=';
+@@ -281,6 +282,7 @@
+ my $sdb = Amazon::SimpleDB::Client->new(
+   $aws_access_key_id,
+   $aws_secret_access_key,
++  {"ServiceURL" => "$sdb_service_url"}
+ );
+ 
+ my $command = shift(@ARGV) || pod2usage(1);' | patch -p0
+
+# check url on http://aws.amazon.com/articles/3912 amazon SimpleDB Endpoints,
+# below it is for eu-west
+echo "export SDB_SERVICE_URL='https://sdb.eu-west-1.amazonaws.com'" >> ~/.ec2/ec2rc && . ~/.ec2/ec2rc
+
+# and now test
+simpledb list-domains
