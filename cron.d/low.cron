@@ -1,0 +1,6 @@
+# m h  dom mon dow   command
+
+@hourly /root/backup.sh rdb hourly > /dev/null 2>&1
+@daily /root/backup.sh rdb daily > /dev/null 2>&1
+@weekly /root/backup.sh rdb weekly > /dev/null 2>&1
+@monthly /root/backup.sh rdb monthly > /dev/null 2>&1
