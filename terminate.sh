@@ -17,5 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Redis for AWS. If not, see <http://www.gnu.org/licenses/>.
 
-source /root/config.sh
-python /root/terminate.py ${REDIS_NAME}
+dirname=`dirname $0`
+
+source ${dirname}/config.sh
+python ${dirname}/terminate.py ${REDIS_NAME}

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright (C) 2011, 2012 9apps B.V.
 # 
 # This file is part of Redis for AWS.
@@ -15,12 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Redis for AWS. If not, see <http://www.gnu.org/licenses/>.
 
-# Do not remove 'INSTALLPATH', it will be used when setting up a new
-# Redis server.
+# pretty sad, but this is the easiest way to share
+# the configuration
 
-# m h  dom mon dow   command
+dirname=`dirname $0`
 
-@hourly INSTALLPATH/backup.sh rdb hourly > /dev/null 2>&1
-@daily INSTALLPATH/backup.sh rdb daily > /dev/null 2>&1
-@weekly INSTALLPATH/backup.sh rdb weekly > /dev/null 2>&1
-@monthly INSTALLPATH/backup.sh rdb monthly > /dev/null 2>&1
+source ${dirname}/config.sh
+python ${dirname}/join.py

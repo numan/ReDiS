@@ -17,5 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Redis for AWS. If not, see <http://www.gnu.org/licenses/>.
 
-source /root/config.sh
-python backup.py $1 ${EC2_KEY_ID} ${EC2_SECRET_KEY} $2 $3
+dirname=`dirname $0`
+
+source ${dirname}/config.sh
+python ${dirname}/backup.py $1 ${EC2_KEY_ID} ${EC2_SECRET_KEY} $2 $3

@@ -19,5 +19,8 @@
 
 # pretty sad, but this is the easiest way to share
 # the configuration
-source /root/config.sh
-python /root/launch.py
+
+dirname=`dirname $0`
+
+source ${dirname}/config.sh
+python ${dirname}/remaster.py

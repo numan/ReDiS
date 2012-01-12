@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright (C) 2011, 2012 9apps B.V.
 # 
 # This file is part of Redis for AWS.
@@ -15,26 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Redis for AWS. If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import sys
+# pretty sad, but this is the easiest way to share
+# the configuration
 
-import identity, administration, setup
+dirname=`dirname $0`
 
-# your amazon keys
-key = os.environ['EC2_KEY_ID']
-access = os.environ['EC2_SECRET_KEY']
-
-if __name__ == '__main__':
-	# what is the domain to work with
-	name = os.environ['REDIS_NAME'].strip()
-	zone = os.environ['HOSTED_ZONE_NAME'].rstrip('.')
-	cluster = "{0}.{1}".format(name, zone)
-
-	# make sure we persist the cluster meta data
-	administration.set_cluster_metadata(key, access, cluster)
-
-	# now, set the endpoints in route53 and as Name tag
-	identity.set_endpoint(key, access, cluster)
-
-	# now provision the instance
-	setup.provision(key, access, cluster)
+source ${dirname}/config.sh
+python ${dirname}/leave.py

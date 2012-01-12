@@ -47,8 +47,8 @@ class Cluster:
 			url = "http://169.254.169.254/latest/meta-data/"
 
 			public_hostname = urlopen(url + "public-hostname").read()
-			availability_zone = urlopen(url + "placement/availability-zone").read()
-			region = availability_zone[:-1]
+			zone = urlopen(url + "placement/availability-zone").read()
+			region = zone[:-1]
 		except:
 			sys.exit("We should be getting user-data here...")
 
@@ -62,6 +62,12 @@ class Cluster:
 			self.domain = sdb.create_domain(cluster)
 
 		self.metadata = self.domain.get_item('metadata', True)
+		if None == self.metadata:
+			self.metadata = self.domain.new_item('metadata')
+
+			self.metadata.add_value('master', '')
+			self.metadata.add_value('slave', '')
+			self.metadata.save()
 	
 	def add_node(self, node, endpoint):
 		try:
@@ -140,15 +146,23 @@ class Cluster:
 
 	def get_master(self, node=None):
 		try:
-			return self.domain.get_item(node)['master']
+			master = self.domain.get_item(node)['master']
+
+			return master
 		except:
-			return None
+			return node
 
 	def get_slave(self, node=None):
 		try:
-			return self.domain.get_item(node)['slave']
+			slave = self.domain.get_item(node)['slave']
+
+			return slave
 		except:
-			return None
+			return node
+	
+	def size(self):
+		select = "select count(*) from `{0}` where itemName() like '%.{0}'".format(self.domain.name)
+		return int(self.domain.select(select).next()['Count'])
 
 	def check_integrity(self, cluster):
 		pass

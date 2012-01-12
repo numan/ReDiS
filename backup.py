@@ -78,8 +78,8 @@ def create_bucket(key, access, cluster):
 	# our create_bucket is not idempotent, we can't recreate buckets
 	try:
 		s3.create_bucket( cluster.replace('.', '-'), location=Location.EU)
-	except S3CreateError:
-		pass
+	except S3CreateError as e:
+		print e
 
 def put_RDB(key, access, cluster, prefix='hourly'):
 	s3 = S3Connection(key, access)

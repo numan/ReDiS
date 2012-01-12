@@ -15,19 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with Redis for AWS. If not, see <http://www.gnu.org/licenses/>.
 
+# Do not remove 'INSTALLPATH', it will be used when setting up a new
+# Redis server.
+
 # m h  dom mon dow   command
 
-@hourly /root/backup.sh rdb hourly > /dev/null 2>&1
-15 */2 * * * /root/backup.sh snapshot hourly > /dev/null 2>&1
+@hourly INSTALLPATH/backup.sh rdb hourly > /dev/null 2>&1
+15 */2 * * * INSTALLPATH/backup.sh snapshot hourly > /dev/null 2>&1
 
-@daily /root/backup.sh rdb daily > /dev/null 2>&1
-@daily /root/backup.sh snapshot daily > /dev/null 2>&1
+@daily INSTALLPATH/backup.sh rdb daily > /dev/null 2>&1
+@daily INSTALLPATH/backup.sh snapshot daily > /dev/null 2>&1
 
-@weekly /root/backup.sh rdb weekly > /dev/null 2>&1
-@weekly /root/backup.sh snapshot weekly > /dev/null 2>&1
+@weekly INSTALLPATH/backup.sh rdb weekly > /dev/null 2>&1
+@weekly INSTALLPATH/backup.sh snapshot weekly > /dev/null 2>&1
 
-@monthly /root/backup.sh rdb monthly > /dev/null 2>&1
-@monthly /root/backup.sh snapshot monthly > /dev/null 2>&1
+@monthly INSTALLPATH/backup.sh rdb monthly > /dev/null 2>&1
+@monthly INSTALLPATH/backup.sh snapshot monthly > /dev/null 2>&1
 
-@daily /root/backup.sh purge > /dev/null 2>&1
-@daily /root/backup.sh purge > /dev/null 2>&1
+@daily INSTALLPATH/backup.sh purge > /dev/null 2>&1
+@daily INSTALLPATH/backup.sh purge > /dev/null 2>&1

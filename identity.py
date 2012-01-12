@@ -78,7 +78,7 @@ def set_endpoint(key, access, cluster):
 		# ok, add ourselves as master (head)
 		change = changes.add_change("CREATE", name, "CNAME", 60)
 		change.add_value(fqdn)
-	except:
+	else:
 		print "Couldn't add Route53 record or set the instance Name tag for " + name + ". It probably already exists."
 
 	changes.commit()

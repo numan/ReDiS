@@ -69,7 +69,7 @@ export EC2_REGION=${EC2_AVAILABILITY_ZONE:0:${#EC2_AVAILABILITY_ZONE}-1}
 export EC2_INSTANCE_ID=$($curl $instance_data_url/meta-data/instance-id)
 
 # this will only work with a patched simpledb (see SIMPLEDB)
-export SDB_SERVICE_URL='https://sdb.${EC2_REGION}.amazonaws.com'
+export SDB_SERVICE_URL="https://sdb.${EC2_REGION}.amazonaws.com"
 
 # changing this is entirely your own responsibility, I wouldn't do it
 export SQS_TASK_QUEUE="${REDIS_NAME}-tasks"
