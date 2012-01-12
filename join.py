@@ -24,6 +24,7 @@ from urllib2 import urlopen
 from cluster import Cluster
 from host import Host
 from route53 import Route53Zone
+from ec2 import EC2
 
 # your amazon keys
 key = os.environ['EC2_KEY_ID']
@@ -40,6 +41,7 @@ cluster = "{0}.{1}".format(name, zone_name.rstrip('.'))
 # get/create the cluster environment
 cluster = Cluster(key, access, cluster)
 r53_zone = Route53Zone(key, access, zone_id)
+ec2 = EC2(key, access)
 
 if __name__ == '__main__':
 	# and get the instance up and running
@@ -51,6 +53,7 @@ if __name__ == '__main__':
 	# now we are ready to be (added to) the cluster
 	cluster.add_node(node, endpoint)
 	r53_zone.create_record(node, endpoint)
+	ec2.set_tag(node)
 
 	master = cluster.get_master(node)
 	# if we don't have a master, we ARE the master
