@@ -46,6 +46,7 @@ ec2 = EC2(key, access)
 if __name__ == '__main__':
 	# and get the instance up and running
 	host = Host(cluster.domain.name)
+	host.monitor()
 
 	node = host.get_node()
 	endpoint = host.get_endpoint()

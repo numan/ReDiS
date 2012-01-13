@@ -67,6 +67,15 @@ class Host:
 			os.system("/usr/sbin/monit monitor is-slave")
 			os.system("/usr/sbin/monit unmonitor is-master")
 
+	def monitor(self):
+		os.system("/usr/sbin/monit monitor redis")
+		self.set_master()
+
+	def unmonitor(self):
+		os.system("/usr/sbin/monit unmonitor redis")
+		os.system("/usr/sbin/monit unmonitor is-slave")
+		os.system("/usr/sbin/monit unmonitor is-master")
+
 if __name__ == '__main__':
 	# easy testing, use like this (requires environment variables)
 	#	python host.py set_master cluster 2c922342a.cluster

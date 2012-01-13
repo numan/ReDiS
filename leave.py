@@ -46,6 +46,7 @@ ec2 = EC2(key, access)
 if __name__ == '__main__':
 	# get the host, us
 	host = Host(cluster.domain.name)
+	host.unmonitor()
 
 	node = host.get_node()
 	endpoint = host.get_endpoint()
