@@ -44,18 +44,18 @@ r53_zone = Route53Zone(key, access, zone_id)
 ec2 = EC2(key, access)
 
 if __name__ == '__main__':
-	# and get the instance up and running
+	# get the host, us
 	host = Host(cluster.domain.name)
 
 	node = host.get_node()
 	endpoint = host.get_endpoint()
 
-	# now we are ready to be (added to) the cluster
+	# delete all there is to us
 	cluster.delete_node(node)
 	r53_zone.delete_record(node)
 	ec2.unset_tag()
 
-	# if we are the last, we need cleanup a bit
+	# and the last to leave, please close the door
 	size = cluster.size()
 	if size <= 0:
 		r53_zone.delete_record(cluster.domain.name)

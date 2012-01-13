@@ -59,7 +59,8 @@ class Cluster:
 
 		self.domain = sdb.lookup(cluster, True)
 		if self.domain == None:
-			self.domain = sdb.create_domain(cluster)
+			sdb.create_domain(cluster)
+			self.domain = sdb.lookup(cluster, True)
 
 		self.metadata = self.domain.get_item('metadata', True)
 		if None == self.metadata:
@@ -145,20 +146,26 @@ class Cluster:
 			return None
 
 	def get_master(self, node=None):
+		if node == None or node == "":
+			return self.metadata['master']
+
 		try:
 			master = self.domain.get_item(node)['master']
 
 			return master
 		except:
-			return node
+			return None
 
 	def get_slave(self, node=None):
+		if node == None or node == "":
+			return self.metadata['slave']
+
 		try:
 			slave = self.domain.get_item(node)['slave']
 
 			return slave
 		except:
-			return node
+			return None
 	
 	def size(self):
 		select = "select count(*) from `{0}` where itemName() like '%.{0}'".format(self.domain.name)

@@ -41,6 +41,7 @@ class Host:
 		self.cluster = cluster
 		self.id = hashlib.md5(self.endpoint).hexdigest()[:8]
 		self.node = "{0}.{1}".format(self.id, self.cluster)
+		self.master = None
 
 		self.redis = redis.StrictRedis(host="localhost", port=6379)
 

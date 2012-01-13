@@ -23,6 +23,8 @@ from urllib2 import urlopen
 
 from cluster import Cluster
 from host import Host
+from route53 import Route53Zone
+from ec2 import EC2
 
 # your amazon keys
 key = os.environ['EC2_KEY_ID']
@@ -30,26 +32,32 @@ access = os.environ['EC2_SECRET_KEY']
 
 # what is the domain to work with
 name = os.environ['REDIS_NAME'].strip()
-zone = os.environ['HOSTED_ZONE_NAME'].rstrip('.')
+zone_name = os.environ['HOSTED_ZONE_NAME'].rstrip('.')
+zone_id = os.environ['HOSTED_ZONE_ID']
 
 # the name (and identity) of the cluster (the master)
-name = "{0}.{1}".format(name, zone)
+cluster = "{0}.{1}".format(name, zone_name)
 
 # get/create the cluster environment
-cluster = Cluster(key, access, name, userdata)
+cluster = Cluster(key, access, cluster)
+r53_zone = Route53Zone(key, access, zone_id)
+ec2 = EC2(key, access)
 
 if __name__ == '__main__':
-	# first, we have to get the instance
-	host = Host(key, access, name, userdata)
+	# get the host (uses domain name, gets the rest from the instance itself)
+	host = Host(cluster.domain.name)
 
 	node = host.get_node()
 	endpoint = host.get_endpoint()
 
-	# get the failing master
-	old = cluster.get_master(node)
-	cluster.delete_node(old)
+	master = host.get_master()
+	if None != master:
+		grandmaster = cluster.get_master(master)
+		cluster.delete_node(master)
 
-	new = cluster.get_master(node)
-	host.set_master(new)
-	if new == None:
-		route53.update_record(name, endpoint)
+		# are we the new master?
+		if grandmaster == None:
+			r53_zone.update_record(cluster.domain.name, endpoint)
+			host.set_master()
+		else:
+			host.set_master(grandmaster)

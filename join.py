@@ -57,5 +57,11 @@ if __name__ == '__main__':
 
 	master = cluster.get_master(node)
 	# if we don't have a master, we ARE the master
-	if master == node:
+	if master == None:
 		r53_zone.update_record(cluster.domain.name, endpoint)
+
+		# and make sure we 'run' correctly (no-slave, well-monitored)
+		host.set_master()
+	elif master != node:
+		# attach to the master (and start watching its availability)
+		host.set_master(master)
