@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Redis for AWS. If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import sys
-import json
+import os, sys, redis
 
 from urllib2 import urlopen
 
@@ -43,6 +41,8 @@ cluster = Cluster(key, access, cluster)
 r53_zone = Route53Zone(key, access, zone_id)
 ec2 = EC2(key, access)
 
+r = redis.StrictRedis(host='localhost', port=6379)
+
 if __name__ == '__main__':
 	# get the host (uses domain name, gets the rest from the instance itself)
 	host = Host(cluster.domain.name)
@@ -50,14 +50,16 @@ if __name__ == '__main__':
 	node = host.get_node()
 	endpoint = host.get_endpoint()
 
-	master = host.get_master()
-	if None != master:
+	# make sure we get the redis master, perhaps our master is already gone
+	# from the cluster
+	master = r.info()['master_host']
+	if cluster.exists(master):
 		grandmaster = cluster.get_master(master)
-		cluster.delete_node(master)
+	else:
+		grandmaster = cluster.get_master(node)
 
-		# are we the new master?
-		if grandmaster == None:
-			r53_zone.update_record(cluster.domain.name, endpoint)
-			host.set_master()
-		else:
-			host.set_master(grandmaster)
+	if grandmaster == None:
+		r53_zone.update_record(cluster.domain.name, endpoint)
+		host.set_master()
+	else:
+		host.set_master(grandmaster)

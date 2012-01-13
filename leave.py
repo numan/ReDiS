@@ -46,15 +46,16 @@ ec2 = EC2(key, access)
 if __name__ == '__main__':
 	# get the host, us
 	host = Host(cluster.domain.name)
-	host.unmonitor()
+	# make sure we are not connected to anything anymore
+	host.set_master()
 
 	node = host.get_node()
 	endpoint = host.get_endpoint()
 
 	# delete all there is to us
-	cluster.delete_node(node)
-	r53_zone.delete_record(node)
 	ec2.unset_tag()
+	r53_zone.delete_record(node)
+	cluster.delete_node(node)
 
 	# and the last to leave, please close the door
 	size = cluster.size()

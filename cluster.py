@@ -139,9 +139,12 @@ class Cluster:
 		else:
 			return False
 
+	def exists(self, node):
+		return (self.domain.get_item(node, True) != None)
+
 	def get_endpoint(self, node):
 		try:
-			return self.domain.get_item(node)['endpoint']
+			return self.domain.get_item(node, True)['endpoint']
 		except:
 			return None
 
@@ -150,9 +153,7 @@ class Cluster:
 			return self.metadata['master']
 
 		try:
-			master = self.domain.get_item(node)['master']
-
-			return master
+			return self.domain.get_item(node, True)['master']
 		except:
 			return None
 
@@ -161,9 +162,7 @@ class Cluster:
 			return self.metadata['slave']
 
 		try:
-			slave = self.domain.get_item(node)['slave']
-
-			return slave
+			return self.domain.get_item(node, True)['slave']
 		except:
 			return None
 	

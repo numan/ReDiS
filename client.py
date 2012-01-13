@@ -59,7 +59,7 @@ class Client:
 			master = self.domain.get_item(node)['master']
 
 			return master
-		except:
+		except
 			return self.metadata['master']
 
 	def get_slave(self, node=None):
