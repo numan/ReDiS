@@ -1,8 +1,5 @@
   # add this to the main monit with 'include <path>/redis.monitrc'
 
-  # INFO gives a bit more than 955 bytes
-  set expectbuffer 2 kb
-
   # always check the local redis
   check process redis with pidfile /var/run/redis/redis.pid
     start program = "/etc/init.d/redis start"
@@ -11,20 +8,10 @@
     if 2 restarts within 3 cycles then timeout
     group redis
 
-  # a redis can have 2 states: master or slave. we want to check
-  # for health of these 2 different states. we'll be using these
-  # checks, turning them on and off.
-
   # and check if local redis thinks it has a healthy master
-  check host is-slave with address localhost
-    if failed port 6379
-      send "INFO\r\n" expect ".*role:slave.*master_link_status:up.*"
-      then exec "/root/ReDiS/remaster.sh"
-    group redis
-
-  # or check if local redis is a master
-  check host is-master with address localhost
-    if failed port 6379
-      send "INFO\r\n" expect ".*role:master.*"
-      then exec "/root/ReDiS/remaster.sh"
+  # [1456] 16 Jan 19:22:27 # I/O error writing to MASTER: Connection refused
+  # [787] 16 Jan 20:41:25 # Unable to connect to MASTER: Success
+  check file log with path "/var/log/redis/daemon.log"
+    ignore not match /root/ReDiS/etc/monit/regexes
+    if match /root/ReDiS/etc/monit/regexes then exec "/root/ReDiS/remaster.sh"
     group redis

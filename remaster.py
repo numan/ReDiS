@@ -52,14 +52,31 @@ if __name__ == '__main__':
 
 	# make sure we get the redis master, perhaps our master is already gone
 	# from the cluster
-	master = r.info()['master_host']
-	if cluster.exists(master):
-		grandmaster = cluster.get_master(master)
-	else:
-		grandmaster = cluster.get_master(node)
+	try:
+		info = r.info()
+		link_status = info['master_link_status']
 
-	if grandmaster == None:
-		r53_zone.update_record(cluster.domain.name, endpoint)
-		host.set_master()
-	else:
-		host.set_master(grandmaster)
+		if link_status != "up":
+			link_down_since_seconds = info['master_link_down_since_seconds']
+
+			down = (link_down_since_seconds > 30)
+		else:
+			down = False
+	except Exception as e:
+		down = True
+
+	if down:
+		master = r.info()['master_host']
+		if cluster.exists(master):
+			grandmaster = cluster.get_master(master)
+
+			# and execute the master
+			cluster.delete_node(master)
+		else:
+			grandmaster = cluster.get_master(node)
+
+		if grandmaster == None:
+			r53_zone.update_record(cluster.domain.name, endpoint)
+			host.set_master()
+		else:
+			host.set_master(grandmaster)

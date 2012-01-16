@@ -58,17 +58,8 @@ class Host:
 		self.master = master
 		if None == master:
 			self.redis.slaveof()
-
-			os.system("/usr/sbin/monit unmonitor is-slave")
-			os.system("/usr/sbin/monit monitor is-master")
 		else:
-			print master
 			self.redis.slaveof(master, 6379)
-
-			os.system("/usr/sbin/monit monitor is-slave")
-			os.system("/usr/sbin/monit unmonitor is-master")
-
-		os.system("/usr/sbin/monit monitor redis")
 
 if __name__ == '__main__':
 	# easy testing, use like this (requires environment variables)
