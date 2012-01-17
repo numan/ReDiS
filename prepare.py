@@ -64,7 +64,6 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 
 			# if we start from snapshot we are almost done
 			if snapshot == "" or None == snapshot:
-				print snapshot
 				# first create filesystem
 				os.system("/sbin/mkfs.xfs {0}".format(device))
 
@@ -92,7 +91,8 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 		os.system("/bin/sed 's:INSTALLPATH:{0}:' {1} | /usr/bin/crontab".format(path, cron))
 
 		# ok, ready to set up assets like bucket and volume
-		if "no" != persistence:
+		# also, if we have a valid mount, we don't do anything
+		if os.path.ismount(mount) == False and "no" != persistence:
 			backup.create_bucket(key, access, cluster)
 
 			try:
@@ -118,9 +118,7 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 			if "" != latest:
 				backup.restore(key, access, cluster, latest)
 
-	# if we have a valid mount, we don't do anything
-	if os.path.ismount(mount) == False:
-		prepare()
+	prepare()
 
 def meminfo():
 	"""
