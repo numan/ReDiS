@@ -139,6 +139,43 @@ class Cluster:
 		else:
 			return False
 
+	# blaming can be done in case of loss of connection. if a slave
+	# looses connection, it can blame its master, and start searching for
+	# a new master (or become THE master).
+	def incarcerate_node(self, node):
+		head = self.metadata['master']
+		tail = self.metadata['slave']
+
+		item = self.domain.get_item(node, True)
+
+		if None != item:
+			# we have to be careful, node might be head or tail
+			if node == head == tail:
+				self.metadata['master'] = None
+				self.metadata['slave'] = None
+			elif node == tail:
+				master = self.get_master(node)
+				self.metadata['slave'] = master
+				self.domain.delete_attributes(master, ['slave'])
+			elif node == head:
+				slave = self.get_slave(node)
+				self.metadata['master'] = slave
+				self.domain.delete_attributes(slave, ['master'])
+			else:
+				master = self.get_master(node)
+				slave = self.get_slave(node)
+
+				self.domain.put_attributes(master, {'slave': slave})
+				self.domain.put_attributes(slave, {'master': master})
+
+			self.domain.delete_attributes(node, ['master'])
+			self.domain.delete_attributes(node, ['slave'])
+			self.metadata.save()
+
+			return True
+		else:
+			return False
+
 	def exists(self, node):
 		return (self.domain.get_item(node, True) != None)
 

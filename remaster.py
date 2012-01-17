@@ -67,16 +67,25 @@ if __name__ == '__main__':
 
 	if down:
 		master = r.info()['master_host']
+		print "master: {0}".format(master)
 		if cluster.exists(master):
 			grandmaster = cluster.get_master(master)
+			print "{0} = cluster.get_master({1})".format(grandmaster, master)
 
-			# and execute the master
-			cluster.delete_node(master)
+			# and make sure the master doesn't participate anymore
+			cluster.incarcerate_node(master)
+			print "cluster.incarcerate_node({0})".format(master)
 		else:
 			grandmaster = cluster.get_master(node)
+			print "{0} = cluster.get_master({1})".format(grandmaster, node)
 
 		if grandmaster == None:
 			r53_zone.update_record(cluster.domain.name, endpoint)
+			print "r53_zone.update_record({0}, {1})".format(cluster.domain.name, endpoint)
 			host.set_master()
+			print "host.set_master()"
 		else:
 			host.set_master(grandmaster)
+			print "host.set_master({0})".format(grandmaster)
+	else:
+		print "master is up (and running)"

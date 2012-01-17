@@ -59,7 +59,7 @@ class Client:
 			master = self.domain.get_item(node)['master']
 
 			return master
-		except
+		except:
 			return self.metadata['master']
 
 	def get_slave(self, node=None):
@@ -75,7 +75,7 @@ class Client:
 		return int(self.domain.select(select).next()['Count'])
 
 	def slaves(self):
-		select = "select itemName() from `{0}` where master is not null and itemName() like '%.{0}'".format(self.domain.name)
+		select = "select itemName() from `{0}` where master is not null and master != '' and itemName() like '%.{0}'".format(self.domain.name)
 		items = self.domain.select(select)
 		
 		slaves = []
