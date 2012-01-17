@@ -56,10 +56,17 @@ class Host:
 
 	def set_master(self, master=None):
 		self.master = master
-		if None == master:
-			self.redis.slaveof()
-		else:
-			self.redis.slaveof(master, 6379)
+		try:
+			if None == master:
+				self.redis.slaveof()
+				os.system("/usr/sbin/monit unmonitor slave")
+			else:
+				self.redis.slaveof(master, 6379)
+				os.system("/usr/sbin/monit monitor slave")
+
+			os.system("/usr/sbin/monit monitor redis")
+		except Exception as e:
+			print e
 
 if __name__ == '__main__':
 	# easy testing, use like this (requires environment variables)

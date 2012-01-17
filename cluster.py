@@ -205,7 +205,7 @@ class Cluster:
 	
 	def size(self):
 		select = "select count(*) from `{0}` where itemName() like '%.{0}'".format(self.domain.name)
-		return int(self.domain.select(select).next()['Count'])
+		return int(self.domain.select(select, consistent_read=True).next()['Count'])
 
 	def check_integrity(self, cluster):
 		pass

@@ -52,14 +52,16 @@ class Route53Zone:
 	def delete_record(self, name):
 		changes = ResourceRecordSets(self.route53, self.zone_id)
 
+		value = None
 		sets = self.route53.get_all_rrsets(self.zone_id, None)
 		for rset in sets:
 			if rset.name == name + ".":
 				value = rset.resource_records[0]
 
-		change = changes.add_change("DELETE", name + ".", "CNAME", 60)
-		change.add_value(value)
-		changes.commit()
+		if value != None:
+			change = changes.add_change("DELETE", name + ".", "CNAME", 60)
+			change.add_value(value)
+			changes.commit()
 
 if __name__ == '__main__':
 	# easy testing, use like this (requires environment variables)

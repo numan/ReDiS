@@ -41,10 +41,9 @@ def decommission(key, access, cluster, persistence="no"):
 		rdb = backup.put_RDB(key, access, cluster, 'monthly')
 		administration.set_RDB(key, access, cluster, rdb)
 
-		# if we have a volume, make a last snapshot
-		if "low" != persistence:
-			snapshot = backup.make_snapshot(key, access, cluster, 'monthly')
-			administration.add_snapshot(key, access, cluster, snapshot)
+		# make a last snapshot
+		snapshot = backup.make_snapshot(key, access, cluster, 'monthly')
+		administration.add_snapshot(key, access, cluster, snapshot)
 
 	# we don't have to get rid any the volume, it is deleted on termination
 
@@ -54,18 +53,18 @@ def decommission(key, access, cluster, persistence="no"):
 	os.system("/bin/echo | /usr/bin/crontab")
 
 if __name__ == '__main__':
-    import os, sys
+	import os, sys
 
-    try:
-        persistence = userdata['persistence']
-    except:
-        persistence = None
+	try:
+		persistence = userdata['persistence']
+	except:
+		persistence = None
 
-    # what is the domain to work with
-    name = os.environ['REDIS_NAME'].strip()
-    zone = os.environ['HOSTED_ZONE_NAME'].rstrip('.')
+	# what is the domain to work with
+	name = os.environ['REDIS_NAME'].strip()
+	zone = os.environ['HOSTED_ZONE_NAME'].rstrip('.')
 
-    # the name (and identity) of the cluster (the master)
-    cluster = "{0}.{1}".format(name, zone)
+	# the name (and identity) of the cluster (the master)
+	cluster = "{0}.{1}".format(name, zone)
 
-    decommission(sys.argv[1], sys.argv[2], cluster, persistence=persistence)
+	decommission(sys.argv[1], sys.argv[2], cluster, persistence=persistence)

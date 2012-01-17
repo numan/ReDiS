@@ -72,11 +72,11 @@ class Client:
 	
 	def size(self):
 		select = "select count(*) from `{0}` where itemName() like '%.{0}'".format(self.domain.name)
-		return int(self.domain.select(select).next()['Count'])
+		return int(self.domain.select(select, consistent_read=True).next()['Count'])
 
 	def slaves(self):
 		select = "select itemName() from `{0}` where master is not null and master != '' and itemName() like '%.{0}'".format(self.domain.name)
-		items = self.domain.select(select)
+		items = self.domain.select(select, consistent_read=True)
 		
 		slaves = []
 		for item in items:

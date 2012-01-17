@@ -79,7 +79,7 @@ def create_bucket(key, access, cluster):
 	try:
 		s3.create_bucket( cluster.replace('.', '-'), location=Location.EU)
 	except S3CreateError as e:
-		print e
+		pass
 
 def put_RDB(key, access, cluster, prefix='hourly'):
 	s3 = S3Connection(key, access)

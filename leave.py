@@ -44,20 +44,35 @@ r53_zone = Route53Zone(key, access, zone_id)
 ec2 = EC2(key, access)
 
 if __name__ == '__main__':
-	# get the host, us
-	host = Host(cluster.domain.name)
-	# make sure we are not connected to anything anymore
-	host.set_master()
+	try:
+		# get the host, us
+		host = Host(cluster.domain.name)
+		# make sure we are not connected to anything anymore
+		host.set_master()
 
-	node = host.get_node()
-	endpoint = host.get_endpoint()
+		node = host.get_node()
+		endpoint = host.get_endpoint()
+	except Exception as e:
+		print e
 
-	# delete all there is to us
-	ec2.unset_tag()
-	r53_zone.delete_record(node)
-	cluster.delete_node(node)
+	try:
+		# delete all there is to us
+		ec2.unset_tag()
+	except Exception as e:
+		print e
 
-	# and the last to leave, please close the door
-	size = cluster.size()
-	if size <= 0:
-		r53_zone.delete_record(cluster.domain.name)
+	try:
+		r53_zone.delete_record(node)
+	except Exception as e:
+		print e
+
+	try:
+		cluster.delete_node(node)
+
+		# and the last to leave, please close the door
+		size = cluster.size()
+		print size
+		if size <= 0:
+			r53_zone.delete_record(cluster.domain.name)
+	except Exception as e:
+		print e

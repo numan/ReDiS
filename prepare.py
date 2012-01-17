@@ -21,7 +21,7 @@ import json, urllib2
 from boto.ec2.connection import EC2Connection
 from boto.ec2.regioninfo import RegionInfo
 
-import backup
+import backup, administration
 
 try:
 	url = "http://169.254.169.254/latest/"
@@ -54,6 +54,9 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 			volume.attach(instance_id, device)
 			volume_id = volume.id
 
+			# we can't continue without a properly attached device
+			os.system("while [ ! -b {0} ] ; do /bin/true ; done".format(device))
+
 			# make sure the volume is deleted upon termination
 			# should also protect from disaster like loosing an instance
 			# (it doesn't work with boto, so we do it 'outside')
@@ -61,10 +64,11 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 
 			# if we start from snapshot we are almost done
 			if snapshot == "" or None == snapshot:
+				print snapshot
 				# first create filesystem
 				os.system("/sbin/mkfs.xfs {0}".format(device))
 
-			# mount
+			# mount, but first wait until the device is ready
 			os.system("/bin/mount -t xfs -o defaults {0} {1}".format(device, mount))
 			# and grow (if necessary)
 			os.system("/usr/sbin/xfs_growfs {0}".format(mount))
@@ -107,8 +111,8 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 
 			# we have a bucket, and perhaps a device. lets try to restore
 			# from rdb, first from metadata later from user_data.
-			if "" != metadata['rdb']:
-				backup.restore(key, access, cluster, metadata['rdb'])
+			if rdb != None and "" != rdb:
+				backup.restore(key, access, cluster, rdb)
 
 			latest = administration.get_latest_RDB(key, access, cluster)
 			if "" != latest:
@@ -119,19 +123,19 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 		prepare()
 
 def meminfo():
-    """
-    dict of data from meminfo (str:int).
-    Values are in kilobytes.
-    """
-    re_parser = re.compile(r'^(?P<key>\S*):\s*(?P<value>\d*)\s*kB')
-    result = dict()
-    for line in open('/proc/meminfo'):
-        match = re_parser.match(line)
-        if not match:
-            continue # skip lines that don't parse
-        key, value = match.groups(['key', 'value'])
-        result[key] = int(value)
-    return result
+	"""
+	dict of data from meminfo (str:int).
+	Values are in kilobytes.
+	"""
+	re_parser = re.compile(r'^(?P<key>\S*):\s*(?P<value>\d*)\s*kB')
+	result = dict()
+	for line in open('/proc/meminfo'):
+		match = re_parser.match(line)
+		if not match:
+			continue # skip lines that don't parse
+		key, value = match.groups(['key', 'value'])
+		result[key] = int(value)
+	return result
 
 if __name__ == '__main__':
 	import os, sys
@@ -150,11 +154,11 @@ if __name__ == '__main__':
 		rdb = None
 
 	# what is the domain to work with
-	name = os.environ['REDIS_NAME'].strip()
-	zone = os.environ['HOSTED_ZONE_NAME'].rstrip('.')
+	redis_name = os.environ['REDIS_NAME'].strip()
+	hosted_zone = os.environ['HOSTED_ZONE_NAME'].rstrip('.')
 
 	# the name (and identity) of the cluster (the master)
-	cluster = "{0}.{1}".format(name, zone)
+	cluster = "{0}.{1}".format(redis_name, hosted_zone)
 	size = 3 * ( meminfo()['MemTotal'] / ( 1024 * 1024 ) )
 
 	provision(sys.argv[1], sys.argv[2], cluster, size,

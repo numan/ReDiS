@@ -167,7 +167,7 @@ def get_expired_snapshots(key, access, cluster):
 
 	now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 	select = "select * from `{0}` where itemName() > 'snap-' and itemName() != 'snapshot' and expires < '{1}'".format(cluster, now)
-	snapshots = domain.select(select)
+	snapshots = domain.select(select, consistent_read=True)
 	return snapshots
 
 def get_identity(key, access, cluster):
