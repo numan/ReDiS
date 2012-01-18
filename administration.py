@@ -172,6 +172,18 @@ def get_expired_snapshots(key, access, cluster):
 	snapshots = domain.select(select, consistent_read=True)
 	return snapshots
 
+def get_all_snapshots(key, access, cluster):
+	sdb = SDBConnection(key, access, region=region_info)
+
+	domain = sdb.lookup(cluster, True)
+	if domain == None:
+		domain = sdb.create_domain(cluster)
+
+	now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+	select = "select * from `{0}` where itemName() > 'snap-' and itemName() != 'snapshot'".format(cluster)
+	snapshots = domain.select(select, consistent_read=True)
+	return snapshots
+
 def get_identity(key, access, cluster):
 	sdb = SDBConnection(key, access, region=region_info)
 

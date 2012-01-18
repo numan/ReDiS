@@ -130,6 +130,7 @@ def purge_snapshots(key, access, cluster, snapshots):
 
 	for snapshot in snapshots:
 		if ec2.delete_snapshot(snapshot['snapshot']):
+			print "deleting snapshot: {0}".format(snapshot['snapshot'])
 			administration.delete_snapshot(key,
 											access,
 											cluster,
@@ -165,5 +166,10 @@ if __name__ == '__main__':
 											cluster, backup)
 	elif "purge" == sys.argv[1]:
 		snapshots = administration.get_expired_snapshots(sys.argv[2],
+											sys.argv[3], cluster)
+		purge_snapshots(sys.argv[2], sys.argv[3], cluster, snapshots)
+
+	elif "purge-all" == sys.argv[1]:
+		snapshots = administration.get_all_snapshots(sys.argv[2],
 											sys.argv[3], cluster)
 		purge_snapshots(sys.argv[2], sys.argv[3], cluster, snapshots)
