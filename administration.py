@@ -122,16 +122,18 @@ def add_snapshot(key, access, cluster, snapshot):
 	if domain == None:
 		domain = sdb.create_domain(cluster)
 
+	now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 	# add the latest rdb (for automatic restores)
 	latest = domain.new_item('snapshot')
 	latest.add_value('snapshot', snapshot[0])
 	# get the expiration date from the object name (for comparison)
-	latest.add_value('created', strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+	latest.add_value('created', now)
 	latest.save()
 
 	# add the snapshot for expiration
 	backup = domain.new_item(snapshot[0])
 	backup.add_value('snapshot', snapshot[0])
+	backup.add_value('created', now)
 	backup.add_value('expires', snapshot[1])
 	backup.save()
 
