@@ -70,6 +70,9 @@ class Cluster:
 			self.metadata.add_value('slave', '')
 			self.metadata.save()
 	
+	def name(self):
+		return self.domain.name
+
 	def add_node(self, node, endpoint):
 		try:
 			head = self.metadata['master']

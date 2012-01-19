@@ -45,7 +45,7 @@ cluster = Cluster(key, access, cluster)
 r53_zone = Route53Zone(key, access, zone_id)
 ec2 = EC2(key, access)
 
-events = Events(sys.argv[1], sys.argv[2], cluster)
+events = Events(key, access, cluster.name())
 node = Host(cluster).get_node()
 component = os.path.basename(sys.argv[0])
 def log(message, verbose='normal'):
