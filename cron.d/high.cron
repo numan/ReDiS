@@ -20,6 +20,8 @@
 
 # m h  dom mon dow   command
 
+* * * * * INSTALLPATH/monitor.sh > /dev/null 2>&1
+
 @hourly INSTALLPATH/backup.sh rdb hourly > /dev/null 2>&1
 15 */2 * * * INSTALLPATH/backup.sh snapshot hourly > /dev/null 2>&1
 

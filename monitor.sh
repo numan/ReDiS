@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright (C) 2011, 2012 9apps B.V.
 # 
 # This file is part of Redis for AWS.
@@ -15,6 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Redis for AWS. If not, see <http://www.gnu.org/licenses/>.
 
-# m h  dom mon dow   command
+# pretty sad, but this is the easiest way to share
+# the configuration
 
-* * * * * INSTALLPATH/monitor.sh > /dev/null 2>&1
+dirname=`dirname $0`
+
+source ${dirname}/config.sh
+python ${dirname}/monitor.py put
