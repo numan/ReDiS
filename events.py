@@ -48,9 +48,9 @@ class Events:
 		sdb = SDBConnection(key, access, region=region_info)
 
 		try:
-			self.verbose = userdata['verbose']
+			self.logging = userdata['logging']
 		except:
-			self.verbose = 'production'
+			self.logging = 'warning'
 
 		self.events = "events.{0}".format(cluster)
 
@@ -63,17 +63,17 @@ class Events:
 			auto_increment.add_value('value',0)
 			auto_increment.save()
 
-	def log(self, node, component, message, verbose=None):
-		if None == verbose:
-			verbose = self.verbose
+	def log(self, node, component, message, logging=None):
+		if None == logging:
+			logging = self.logging
 
-		if self.verbose != 'silent':
-			if not (verbose == 'debug' and self.verbose == 'production'):
+		if self.logging != 'error':
+			if not (logging == 'info' and self.logging == 'warning'):
 				increment = self.increment()
 
 				now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 				new = self.domain.new_item(increment)
-				new.add_value('verbose', verbose)
+				new.add_value('logging', logging)
 				new.add_value('component', component)
 				new.add_value('message', message)
 				new.add_value('node', node)
@@ -123,7 +123,7 @@ class Events:
 			msg = "[{0}] (3): {1}, {2} ({4})\n{5}".format(event['created'],
 														event['component'],
 														event['message'],
-														event['verbose'],
+														event['logging'],
 														event['node'], msg)
 			limit = int(limit) - 1
 			if limit <= 0:

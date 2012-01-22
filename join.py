@@ -48,39 +48,39 @@ ec2 = EC2(key, access)
 events = Events(key, access, cluster.name())
 node = Host(cluster).get_node()
 component = os.path.basename(sys.argv[0])
-def log(message, verbose='normal'):
-	events.log(node, component, message, verbose)
+def log(message, logging='info'):
+	events.log(node, component, message, logging)
 
 if __name__ == '__main__':
-	log('joining the cluster')
+	log('joining the cluster', 'info')
 	# and get the instance up and running
-	log('configuring the host', 'debug')
+	log('configuring the host', 'info')
 	host = Host(cluster.domain.name)
 
 	node = host.get_node()
 	endpoint = host.get_endpoint()
 
-	log('adding the node to the cluster', 'debug')
+	log('adding the node to the cluster', 'info')
 	# now we are ready to be (added to) the cluster
 	cluster.add_node(node, endpoint)
-	log('creating a Route53 records', 'debug')
+	log('creating a Route53 records', 'info')
 	r53_zone.create_record(node, endpoint)
-	log('setting the tag', 'debug')
+	log('setting the tag', 'info')
 	ec2.set_tag(node)
 
-	log('getting the master of the node', 'debug')
+	log('getting the master of the node', 'info')
 	master = cluster.get_master(node)
 	# if we don't have a master, we ARE the master
 	if master == None:
-		log('setting the main Route53 record for the cluster', 'debug')
+		log('setting the main Route53 record for the cluster', 'info')
 		r53_zone.update_record(cluster.domain.name, endpoint)
 
 		# and make sure we 'run' correctly (no-slave, well-monitored)
-		log('set the host to run as master', 'debug')
+		log('set the host to run as master', 'info')
 		host.set_master()
 	else:
 		# attach to the master (and start watching its availability)
-		log('set the host to run as slave of {0}'.format(master), 'debug')
+		log('set the host to run as slave of {0}'.format(master), 'info')
 		host.set_master(master)
 
-	log('joined the cluster')
+	log('joined the cluster', 'info')

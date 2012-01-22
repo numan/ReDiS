@@ -48,45 +48,45 @@ ec2 = EC2(key, access)
 events = Events(key, access, cluster.name())
 node = Host(cluster).get_node()
 component = os.path.basename(sys.argv[0])
-def log(message, verbose='normal'):
-    events.log(node, component, message, verbose)
+def log(message, logging='info'):
+    events.log(node, component, message, logging)
 
 if __name__ == '__main__':
-	log('leaving the cluster')
+	log('leaving the cluster', 'info')
 	try:
 		# get the host, us
-		log('get the host', 'debug')
+		log('get the host', 'info')
 		host = Host(cluster.domain.name)
 		# make sure we are not connected to anything anymore
-		log('disconnect from other nodes', 'debug')
+		log('disconnect from other nodes', 'info')
 		host.set_master()
 
 		node = host.get_node()
 		endpoint = host.get_endpoint()
 	except Exception as e:
-		log(e)
+		log(e, 'error')
 
 	try:
 		# delete all there is to us
-		log('unset the tag', 'debug')
+		log('unset the tag', 'info')
 		ec2.unset_tag()
 	except Exception as e:
-		log(e)
+		log(e, 'error')
 
 	try:
-		log('delete the Route53 record', 'debug')
+		log('delete the Route53 record', 'info')
 		r53_zone.delete_record(node)
 	except Exception as e:
-		log(e)
+		log(e, 'error')
 
 	try:
-		log('delete from the cluster', 'debug')
+		log('delete from the cluster', 'info')
 		cluster.delete_node(node)
 
 		# and the last to leave, please close the door
 		size = cluster.size()
 		if size <= 0:
-			log('delete the master Route53 record', 'debug')
+			log('delete the master Route53 record', 'info')
 			r53_zone.delete_record(cluster.domain.name)
 	except Exception as e:
-		log(e)
+		log(e, 'error')
