@@ -28,6 +28,8 @@ from boto.ec2.regioninfo import RegionInfo
 from cluster import Cluster
 from host import Host
 
+from events import Events
+
 #
 # REDIS MONITOR
 #
@@ -57,7 +59,13 @@ class Monitor:
 		self.cloudwatch = CloudWatchConnection(key, access, region=region_info)
 		self.namespace = '9apps/redis'
 
+		self.events = Events(key, access, cluster)
+
+	def __log(self, message, logging='warning'):
+		self.events.log(self.host.get_node(), 'Monitor', message, logging)
+
 	def collect(self):
+		self.__log('collecting metrics data from Redis INFO', 'info')
 		now = datetime.now()
 
 		items = self.redis.info()
@@ -69,29 +77,30 @@ class Monitor:
 					'cluster' : self.cluster }
 
 		if items['aof_enabled']:
+			self.__log('aof enabled: getting metrics data for the AOF', 'info')
 			names.append('bgrewriteaof_in_progress')
-		values.append(items['bgrewriteaof_in_progress'])
-		units.append('Count')
+			values.append(items['bgrewriteaof_in_progress'])
+			units.append('Count')
 
-		names.append('aof_pending_bio_fsync')
-		values.append(items['aof_pending_bio_fsync'])
-		units.append('Count')
+			names.append('aof_pending_bio_fsync')
+			values.append(items['aof_pending_bio_fsync'])
+			units.append('Count')
 
-		names.append('aof_buffer_length')
-		values.append(items['aof_buffer_length'])
-		units.append('Count')
+			names.append('aof_buffer_length')
+			values.append(items['aof_buffer_length'])
+			units.append('Count')
 
-		names.append('aof_current_size')
-		values.append(items['aof_current_size'])
-		units.append('Bytes')
+			names.append('aof_current_size')
+			values.append(items['aof_current_size'])
+			units.append('Bytes')
 
-		names.append('aof_pending_rewrite')
-		values.append(items['aof_pending_rewrite'])
-		units.append('Count')
+			names.append('aof_pending_rewrite')
+			values.append(items['aof_pending_rewrite'])
+			units.append('Count')
 
-		names.append('aof_base_size')
-		values.append(items['aof_base_size'])
-		units.append('Bytes')
+			names.append('aof_base_size')
+			values.append(items['aof_base_size'])
+			units.append('Bytes')
 
 		# master/slave
 		names.append(items['role'])
@@ -100,6 +109,7 @@ class Monitor:
 
 		for item in items:
 			if item >= 'db0' and item < 'dc':
+				self.__log('adding metrics data for database: {0}'.format(item), 'info')
 				names.append("{0}_keys".format(item))
 				values.append(items[item]['keys'])
 				units.append('Count')
@@ -205,6 +215,7 @@ class Monitor:
 
 		# we can't send all at once, only 20 at a time
 		# first aggregated over all
+		self.__log('put aggregated ReDiS metrics data', 'info')
 		result1 = self.cloudwatch.put_metric_data(self.namespace,
 										names[:20], value=values[:20],
 										unit=units[:20])
@@ -212,6 +223,7 @@ class Monitor:
 										names[20:], value=values[20:],
 										unit=units[20:])
 		for dimension in dimensions:
+			self.__log('put ReDiS metrics data for {0}'.format(dimensions[dimension]), 'info')
 			dimension = { dimension : dimensions[dimension] }
 			result1 = self.cloudwatch.put_metric_data(self.namespace,
 										names[:20], value=values[:20],

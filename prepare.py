@@ -51,58 +51,58 @@ cluster = "{0}.{1}".format(redis_name, hosted_zone)
 events = Events(sys.argv[1], sys.argv[2], cluster)
 node = Host(cluster).get_node()
 component = os.path.basename(sys.argv[0])
-def log(message, verbose='normal'):
-	events.log(node, component, message, verbose)
+def log(message, logging='warning'):
+	events.log(node, component, message, logging)
 
 def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=None):
-	log('start provisioning')
+	log('start provisioning', 'info')
 	# ec2 is region specific
 	region_info = RegionInfo(name=region,
 							endpoint="ec2.{0}.amazonaws.com".format(region))
 	ec2 = EC2Connection(key, access, region=region_info)
 
 	def create_device(snapshot=None):
-		log('getting a device')
+		log('getting a device', 'info')
 		# if we have the device (/dev/sdf) just don't do anything anymore
 		mapping = ec2.get_instance_attribute(instance_id, 'blockDeviceMapping')
 		try:
 			volume_id = mapping['blockDeviceMapping'][device].volume_id
-			log('using existing volume', 'debug')
+			log('using existing volume', 'info')
 		except:
-			log('creating a new volume', 'debug')
+			log('creating a new volume', 'info')
 			volume = ec2.create_volume(size, zone, snapshot)
 			volume.attach(instance_id, device)
 			volume_id = volume.id
-			log('created ' + volume_id, 'debug')
+			log('created ' + volume_id, 'info')
 
 			# we can't continue without a properly attached device
-			log('waiting for ' + device, 'debug')
+			log('waiting for ' + device, 'info')
 			os.system("while [ ! -b {0} ] ; do /bin/true ; done".format(device))
 
 			# make sure the volume is deleted upon termination
 			# should also protect from disaster like loosing an instance
 			# (it doesn't work with boto, so we do it 'outside')
-			log('set delete-on-termination', 'debug')
+			log('set delete-on-termination', 'info')
 			os.system("/usr/bin/ec2-modify-instance-attribute --block-device-mapping \"{0}=:true\" {1} --region {2}".format(device, instance_id, region))
 
 			# if we start from snapshot we are almost done
 			if snapshot == "" or None == snapshot:
-				log('creating a filesystem', 'debug')
+				log('creating a filesystem', 'info')
 				# first create filesystem
 				os.system("/sbin/mkfs.xfs {0}".format(device))
 
-			log('mounting the filesystem', 'debug')
+			log('mounting the filesystem', 'info')
 			# mount, but first wait until the device is ready
 			os.system("/bin/mount -t xfs -o defaults {0} {1}".format(device, mount))
 			# and grow (if necessary)
-			log('growing the filesystem', 'debug')
+			log('growing the filesystem', 'info')
 			os.system("/usr/sbin/xfs_growfs {0}".format(mount))
 
-		log('volume {0} is attached to {1} and mounted ({2}) and ready for use'.format(volume_id, device, mount))
+		log('volume {0} is attached to {1} and mounted ({2}) and ready for use'.format(volume_id, device, mount), 'info')
 		return volume_id
 
 	def prepare():
-		log('prepare the environment')
+		log('prepare the environment', 'info')
 		# from this point we are sure we don't have to be careful
 		# with local files/devices/disks/etc
 
@@ -114,17 +114,17 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 		cron = "{0}/cron.d/{1}.cron".format(path, persistence)
 
 		# redis will start with this conf
-		log('configuring redis', 'debug')
+		log('configuring redis', 'info')
 		os.system("/bin/ln -fs {0} {1}".format(redis, dst))
 		# and root's cron will be set accordingly as well
-		log('setting up cron', 'debug')
+		log('setting up cron', 'info')
 		os.system("/bin/sed 's:INSTALLPATH:{0}:' {1} | /usr/bin/crontab".format(path, cron))
 
 		# ok, ready to set up assets like bucket and volume
 		# also, if we have a valid mount, we don't do anything
-		log('set up persistence', 'debug')
+		log('set up persistence', 'info')
 		if os.path.ismount(mount) == False and "no" != persistence:
-			log('create bucket {0}'.format(cluster), 'debug')
+			log('create bucket {0}'.format(cluster), 'info')
 			backup.create_bucket(key, access, cluster)
 
 			try:
@@ -144,12 +144,12 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 			# we have a bucket, and perhaps a device. lets try to restore
 			# from rdb, first from metadata later from user_data.
 			if rdb != None and "" != rdb:
-				log('restore rdb {0}/{1}'.format(cluster, rdb), 'debug')
+				log('restore rdb {0}/{1}'.format(cluster, rdb), 'info')
 				backup.restore(key, access, cluster, rdb)
 
 			latest = administration.get_latest_RDB(key, access, cluster)
 			if "" != latest:
-				log('restore rdb {0}/{1}'.format(cluster, latest), 'debug')
+				log('restore rdb {0}/{1}'.format(cluster, latest), 'info')
 				backup.restore(key, access, cluster, latest)
 
 	prepare()

@@ -67,20 +67,19 @@ class Events:
 		if None == logging:
 			logging = self.logging
 
-		if self.logging != 'error':
-			if not (logging == 'info' and self.logging == 'warning'):
-				increment = self.increment()
+		if (self.logging == 'info') or (self.logging == logging) or (self.logging == 'warning' and logging == 'error'):
+			increment = self.increment()
 
-				now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-				new = self.domain.new_item(increment)
-				new.add_value('logging', logging)
-				new.add_value('component', component)
-				new.add_value('message', message)
-				new.add_value('node', node)
-				new.add_value('created', now)
-				new.save()
+			now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+			new = self.domain.new_item(increment)
+			new.add_value('logging', logging)
+			new.add_value('component', component)
+			new.add_value('message', message)
+			new.add_value('node', node)
+			new.add_value('created', now)
+			new.save()
 
-				return increment
+			return increment
 
 	def increment(self):
 		incremented = False
