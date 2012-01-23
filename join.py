@@ -46,19 +46,15 @@ r53_zone = Route53Zone(key, access, zone_id)
 ec2 = EC2(key, access)
 
 events = Events(key, access, cluster.name())
-node = Host(cluster, events).get_node()
+host = Host(cluster.name(), events)
+node = host.get_node()
+endpoint = host.get_endpoint()
 component = os.path.basename(sys.argv[0])
 def log(message, logging='info'):
 	events.log(node, component, message, logging)
 
 if __name__ == '__main__':
 	log('joining the cluster', 'info')
-	# and get the instance up and running
-	log('configuring the host', 'info')
-	host = Host(cluster.domain.name, events)
-
-	node = host.get_node()
-	endpoint = host.get_endpoint()
 
 	log('adding the node to the cluster', 'info')
 	# now we are ready to be (added to) the cluster
@@ -73,7 +69,7 @@ if __name__ == '__main__':
 	# if we don't have a master, we ARE the master
 	if master == None:
 		log('setting the main Route53 record for the cluster', 'info')
-		r53_zone.update_record(cluster.domain.name, endpoint)
+		r53_zone.update_record(cluster.name(), endpoint)
 
 		# and make sure we 'run' correctly (no-slave, well-monitored)
 		log('set the host to run as master', 'info')

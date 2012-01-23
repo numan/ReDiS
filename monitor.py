@@ -58,11 +58,12 @@ class Monitor:
 
 		self.events = Events(key, access, cluster)
 
-		# get the host
-		self.host = Host(cluster, self.events)
+		# get the host, but without the logging
+		self.host = Host(cluster)
+		self.node = self.host.get_node()
 
 	def __log(self, message, logging='warning'):
-		self.events.log(self.host.get_node(), 'Monitor', message, logging)
+		self.events.log(self.node, 'Monitor', message, logging)
 
 	def collect(self):
 		self.__log('collecting metrics data from Redis INFO', 'info')
@@ -73,7 +74,7 @@ class Monitor:
 		names = []
 		values = []
 		units = []
-		dimensions = { 'node' : self.host.get_node(),
+		dimensions = { 'node' : self.node,
 					'cluster' : self.cluster }
 
 		if items['aof_enabled']:

@@ -44,7 +44,9 @@ r53_zone = Route53Zone(key, access, zone_id)
 ec2 = EC2(key, access)
 
 events = Events(key, access, cluster.name())
-node = Host(cluster, events).get_node()
+host = Host(cluster.name(), events)
+node = host.get_node()
+endpoint = host.get_endpoint()
 component = os.path.basename(sys.argv[0])
 def log(message, logging='info'):
 	events.log(node, component, message, logging)
@@ -52,12 +54,6 @@ def log(message, logging='info'):
 r = redis.StrictRedis(host='localhost', port=6379)
 
 if __name__ == '__main__':
-	# get the host (uses domain name, gets the rest from the instance itself)
-	host = Host(cluster.domain.name, events)
-
-	node = host.get_node()
-	endpoint = host.get_endpoint()
-
 	# make sure we get the redis master, perhaps our master is already gone
 	# from the cluster
 	try:
@@ -94,8 +90,8 @@ if __name__ == '__main__':
 			log("{0} = cluster.get_master({1})".format(grandmaster, node), 'info')
 
 		if grandmaster == None:
-			r53_zone.update_record(cluster.domain.name, endpoint)
-			log("r53_zone.update_record({0}, {1})".format(cluster.domain.name, endpoint), 'info')
+			r53_zone.update_record(cluster.name(), endpoint)
+			log("r53_zone.update_record({0}, {1})".format(cluster.name(), endpoint), 'info')
 			host.set_master()
 			log("host.set_master()", 'info')
 		else:

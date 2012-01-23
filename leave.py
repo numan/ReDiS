@@ -46,7 +46,9 @@ r53_zone = Route53Zone(key, access, zone_id)
 ec2 = EC2(key, access)
 
 events = Events(key, access, cluster.name())
-node = Host(cluster, events).get_node()
+host = Host(cluster.name(), events)
+node = host.get_node()
+endpoint = host.get_endpoint()
 component = os.path.basename(sys.argv[0])
 def log(message, logging='info'):
     events.log(node, component, message, logging)
@@ -56,13 +58,10 @@ if __name__ == '__main__':
 	try:
 		# get the host, us
 		log('get the host', 'info')
-		host = Host(cluster.domain.name, events)
 		# make sure we are not connected to anything anymore
 		log('disconnect from other nodes', 'info')
 		host.set_master()
 
-		node = host.get_node()
-		endpoint = host.get_endpoint()
 	except Exception as e:
 		log(e, 'error')
 
@@ -87,6 +86,6 @@ if __name__ == '__main__':
 		size = cluster.size()
 		if size <= 0:
 			log('delete the master Route53 record', 'info')
-			r53_zone.delete_record(cluster.domain.name)
+			r53_zone.delete_record(cluster.name())
 	except Exception as e:
 		log(e, 'error')

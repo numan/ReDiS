@@ -48,40 +48,40 @@ class Host:
 		self.redis = redis.StrictRedis(host="localhost", port=6379)
 		self.events = events
 
-	def __log(message, logging='warning'):
+	def __log(self, message, logging='warning'):
 		try:
-			self.events.log(self.host.get_node(), 'Monitor', message, logging)
+			self.events.log(self.node, 'Host', message, logging)
 		except:
 			print "probably no 'events' object supplied"
 
 	def get_node(self):
-		__log('get_node', 'info')
+		self.__log('get_node', 'info')
 		return self.node
 
 	def get_endpoint(self):
-		__log('get_endpoint', 'info')
+		self.__log('get_endpoint', 'info')
 		return self.endpoint
 
 	def get_master(self):
-		__log('get_master', 'info')
+		self.__log('get_master', 'info')
 		return self.master
 
 	def set_master(self, master=None):
-		__log('set_master: {0}'.format(master), 'info')
+		self.__log('set_master: {0}'.format(master), 'info')
 		self.master = master
 		try:
-			__log('monit monitor all', 'info')
+			self.__log('monit monitor all', 'info')
 			os.system("/usr/sbin/monit monitor all")
 			if None == master:
-				__log('slaveof()', 'info')
+				self.__log('slaveof()', 'info')
 				self.redis.slaveof()
 				os.system("/usr/sbin/monit unmonitor slave")
 			else:
-				__log('slaveof({0})'.format(master), 'info')
+				self.__log('slaveof({0})'.format(master), 'info')
 				self.redis.slaveof(master, 6379)
 				os.system("/usr/sbin/monit monitor slave")
 		except Exception as e:
-			__log(e, 'error')
+			self.__log(e, 'error')
 
 if __name__ == '__main__':
 	# easy testing, use like this (requires environment variables)
