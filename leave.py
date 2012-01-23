@@ -46,7 +46,7 @@ r53_zone = Route53Zone(key, access, zone_id)
 ec2 = EC2(key, access)
 
 events = Events(key, access, cluster.name())
-node = Host(cluster).get_node()
+node = Host(cluster, events).get_node()
 component = os.path.basename(sys.argv[0])
 def log(message, logging='info'):
     events.log(node, component, message, logging)
@@ -56,7 +56,7 @@ if __name__ == '__main__':
 	try:
 		# get the host, us
 		log('get the host', 'info')
-		host = Host(cluster.domain.name)
+		host = Host(cluster.domain.name, events)
 		# make sure we are not connected to anything anymore
 		log('disconnect from other nodes', 'info')
 		host.set_master()

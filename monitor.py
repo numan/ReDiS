@@ -48,9 +48,6 @@ class Monitor:
 		# the name (and identity) of the cluster (the master)
 		self.cluster = cluster
 
-		# get the host
-		self.host = Host(cluster)
-
 		self.redis = redis.StrictRedis(host='localhost', port=6379)
 
 		endpoint = "monitoring.{0}.amazonaws.com".format(region)
@@ -60,6 +57,9 @@ class Monitor:
 		self.namespace = '9apps/redis'
 
 		self.events = Events(key, access, cluster)
+
+		# get the host
+		self.host = Host(cluster, self.events)
 
 	def __log(self, message, logging='warning'):
 		self.events.log(self.host.get_node(), 'Monitor', message, logging)

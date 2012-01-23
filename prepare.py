@@ -49,7 +49,7 @@ hosted_zone = os.environ['HOSTED_ZONE_NAME'].rstrip('.')
 cluster = "{0}.{1}".format(redis_name, hosted_zone)
 
 events = Events(sys.argv[1], sys.argv[2], cluster)
-node = Host(cluster).get_node()
+node = Host(cluster, events).get_node()
 component = os.path.basename(sys.argv[0])
 def log(message, logging='warning'):
 	events.log(node, component, message, logging)

@@ -44,7 +44,7 @@ r53_zone = Route53Zone(key, access, zone_id)
 ec2 = EC2(key, access)
 
 events = Events(key, access, cluster.name())
-node = Host(cluster).get_node()
+node = Host(cluster, events).get_node()
 component = os.path.basename(sys.argv[0])
 def log(message, logging='info'):
 	events.log(node, component, message, logging)
@@ -53,7 +53,7 @@ r = redis.StrictRedis(host='localhost', port=6379)
 
 if __name__ == '__main__':
 	# get the host (uses domain name, gets the rest from the instance itself)
-	host = Host(cluster.domain.name)
+	host = Host(cluster.domain.name, events)
 
 	node = host.get_node()
 	endpoint = host.get_endpoint()

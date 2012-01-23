@@ -24,13 +24,15 @@ import redis
 
 from urllib2 import urlopen
 
+from events import Events
+
 #
 # REDIS HOST
 #
 # ...
 #
 class Host:
-	def __init__(self, cluster):
+	def __init__(self, cluster, events=None):
 		try:
 			url = "http://169.254.169.254/latest/"
 			self.endpoint = urlopen(url + "meta-data/public-hostname").read()
@@ -44,29 +46,42 @@ class Host:
 		self.master = None
 
 		self.redis = redis.StrictRedis(host="localhost", port=6379)
+		self.events = events
+
+	def __log(message, logging='warning'):
+		try:
+			self.events.log(self.host.get_node(), 'Monitor', message, logging)
+		except:
+			print "probably no 'events' object supplied"
 
 	def get_node(self):
+		__log('get_node', 'info')
 		return self.node
 
 	def get_endpoint(self):
+		__log('get_endpoint', 'info')
 		return self.endpoint
 
 	def get_master(self):
+		__log('get_master', 'info')
 		return self.master
 
 	def set_master(self, master=None):
+		__log('set_master: {0}'.format(master), 'info')
 		self.master = master
 		try:
+			__log('monit monitor all', 'info')
+			os.system("/usr/sbin/monit monitor all")
 			if None == master:
+				__log('slaveof()', 'info')
 				self.redis.slaveof()
 				os.system("/usr/sbin/monit unmonitor slave")
 			else:
+				__log('slaveof({0})'.format(master), 'info')
 				self.redis.slaveof(master, 6379)
 				os.system("/usr/sbin/monit monitor slave")
-
-			os.system("/usr/sbin/monit monitor redis")
 		except Exception as e:
-			print e
+			__log(e, 'error')
 
 if __name__ == '__main__':
 	# easy testing, use like this (requires environment variables)
