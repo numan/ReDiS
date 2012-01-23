@@ -22,6 +22,7 @@ from boto.ec2.connection import EC2Connection
 from boto.ec2.regioninfo import RegionInfo
 
 import administration, backup
+from events import Events
 
 try:
 	url = "http://169.254.169.254/latest/"
@@ -35,22 +36,36 @@ device = "/dev/sdf"
 mount = "/var/lib/redis"
 
 def decommission(key, access, cluster, persistence="no"):
+	events = Events(key, access, cluster)
+	node = Host(cluster, events).get_node()
+	def log(message, logging='warning'):
+		events.log(node, 'Decommission', message, logging)
+
+	log('start dommissioning', 'info')
 	# make a last backup
 	if "no" != persistence:
+		log('make last backups, first RDB', 'info')
 		# take the latest RDB and move it to S3
 		rdb = backup.put_RDB(key, access, cluster, 'monthly')
 		administration.set_RDB(key, access, cluster, rdb)
 
 		# make a last snapshot
+		log('and now a snapshot', 'info')
 		snapshot = backup.make_snapshot(key, access, cluster, 'monthly')
 		administration.add_snapshot(key, access, cluster, snapshot)
 
 	# we don't have to get rid any the volume, it is deleted on termination
 
 	# change to the default (no persistence)
+	log('remove redis.conf', 'info')
 	os.system("/bin/rm -f /etc/redis/redis.conf")
 	# and empty the cron as well
+	log('empty the cron', 'info')
 	os.system("/bin/echo | /usr/bin/crontab")
+
+	# make sure we make a clean AMI, with all monit checks monitored
+	log('finally, monitor all (monit), for making AMIs', 'info')
+	os.system("/usr/sbin/monit monitor all")
 
 if __name__ == '__main__':
 	import os, sys

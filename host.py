@@ -70,15 +70,17 @@ class Host:
 		self.__log('set_master: {0}'.format(master), 'info')
 		self.master = master
 		try:
-			self.__log('monit monitor all', 'info')
-			os.system("/usr/sbin/monit monitor all")
 			if None == master:
 				self.__log('slaveof()', 'info')
 				self.redis.slaveof()
+
+				self.__log('monit unmonitor slave', 'info')
 				os.system("/usr/sbin/monit unmonitor slave")
 			else:
 				self.__log('slaveof({0})'.format(master), 'info')
 				self.redis.slaveof(master, 6379)
+
+				self.__log('monit unmonitor slave (does not work at startup)', 'info')
 				os.system("/usr/sbin/monit monitor slave")
 		except Exception as e:
 			self.__log(e, 'error')
