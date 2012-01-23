@@ -45,7 +45,6 @@ cluster = Cluster(key, access, cluster)
 r53_zone = Route53Zone(key, access, zone_id)
 ec2 = EC2(key, access)
 
-log('get the host', 'info')
 events = Events(key, access, cluster.name())
 host = Host(cluster.name(), events)
 node = host.get_node()

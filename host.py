@@ -80,7 +80,7 @@ class Host:
 				self.__log('slaveof({0})'.format(master), 'info')
 				self.redis.slaveof(master, 6379)
 
-				self.__log('monit unmonitor slave (does not work at startup)', 'info')
+				self.__log('monit monitor slave', 'info')
 				os.system("/usr/sbin/monit monitor slave")
 		except Exception as e:
 			self.__log(e, 'error')
