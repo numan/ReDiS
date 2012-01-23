@@ -76,18 +76,22 @@ if __name__ == '__main__':
 
 	if down:
 		log('down: find a new master!', 'info')
-		master = r.info()['master_host']
-		log("master: {0}".format(master), 'info')
-		if cluster.exists(master):
-			grandmaster = cluster.get_master(master)
-			log("{0} = cluster.get_master({1})".format(grandmaster, master), 'info')
+		try:
+			master = r.info()['master_host']
+			log("master: {0}".format(master), 'info')
+			if cluster.exists(master):
+				grandmaster = cluster.get_master(master)
+				log("{0} = cluster.get_master({1})".format(grandmaster, master), 'info')
 
-			# and make sure the master doesn't participate anymore
-			cluster.incarcerate_node(master)
-			log("cluster.incarcerate_node({0})".format(master), 'info')
-		else:
-			grandmaster = cluster.get_master(node)
-			log("{0} = cluster.get_master({1})".format(grandmaster, node), 'info')
+				# and make sure the master doesn't participate anymore
+				cluster.incarcerate_node(master)
+				log("cluster.incarcerate_node({0})".format(master), 'info')
+			else:
+				grandmaster = cluster.get_master(node)
+				log("{0} = cluster.get_master({1})".format(grandmaster, node), 'info')
+		except:
+			log('we never were a slave', 'info')
+			grandmaster = None
 
 		if grandmaster == None:
 			r53_zone.update_record(cluster.name(), endpoint)
