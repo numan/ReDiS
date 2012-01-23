@@ -45,6 +45,7 @@ cluster = Cluster(key, access, cluster)
 r53_zone = Route53Zone(key, access, zone_id)
 ec2 = EC2(key, access)
 
+log('get the host', 'info')
 events = Events(key, access, cluster.name())
 host = Host(cluster.name(), events)
 node = host.get_node()
@@ -55,16 +56,6 @@ def log(message, logging='info'):
 
 if __name__ == '__main__':
 	log('leaving the cluster', 'info')
-	try:
-		# get the host, us
-		log('get the host', 'info')
-		# make sure we are not connected to anything anymore
-		log('disconnect from other nodes', 'info')
-		host.set_master()
-
-	except Exception as e:
-		log(e, 'error')
-
 	try:
 		# delete all there is to us
 		log('unset the tag', 'info')

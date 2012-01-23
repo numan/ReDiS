@@ -22,6 +22,7 @@ from boto.ec2.connection import EC2Connection
 from boto.ec2.regioninfo import RegionInfo
 
 import administration, backup
+from host import Host
 from events import Events
 
 try:
