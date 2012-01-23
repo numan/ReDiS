@@ -5,7 +5,6 @@
     start program = "/etc/init.d/redis start"
     stop program  = "/etc/init.d/redis stop"
     if failed port 6379 then restart
-    if 2 restarts within 3 cycles then alert
     group redis
 
   set expectbuffer 2 kb
