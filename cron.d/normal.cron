@@ -35,4 +35,3 @@
 @monthly INSTALLPATH/backup.sh snapshot monthly > /dev/null 2>&1
 
 @daily INSTALLPATH/backup.sh purge > /dev/null 2>&1
-@daily INSTALLPATH/backup.sh purge > /dev/null 2>&1

@@ -115,7 +115,8 @@ def make_snapshot(key, access, cluster, expiration='hourly'):
 
 		os.system("/usr/sbin/xfs_freeze -f {0}".format(mount))
 		snapshot = ec2.create_snapshot(volume_id,
-					"Backup of {0} - expires {1}".format(volume_id,
+					"Backup of {0} - for {1} - expires {2}".format(volume_id,
+														cluster,
 														expires[expiration]))
 		os.system("/usr/sbin/xfs_freeze -u {0}".format(mount))
 	except:

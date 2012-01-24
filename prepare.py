@@ -115,7 +115,7 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 
 		# redis will start with this conf
 		log('configuring redis', 'info')
-		os.system("/bin/ln -fs {0} {1}".format(redis, dst))
+		os.system("/bin/cp -f {0} {1}".format(redis, dst))
 		# and root's cron will be set accordingly as well
 		log('setting up cron', 'info')
 		os.system("/bin/sed 's:INSTALLPATH:{0}:' {1} | /usr/bin/crontab".format(path, cron))
