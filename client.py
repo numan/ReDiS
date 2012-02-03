@@ -45,8 +45,8 @@ class Client:
 
 		sdb = SDBConnection(key, access, region=region_info)
 
-		self.domain = sdb.lookup(cluster, True)
-		self.metadata = self.domain.get_item('metadata', True)
+		self.domain = sdb.create_domain(cluster)
+		self.metadata = self.domain.get_item('metadata', consistent_read=True)
 	
 	def get_endpoint(self, node):
 		try:

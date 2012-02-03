@@ -1,10 +1,10 @@
   # add this to the main monit with 'include <path>/redis.monitrc'
 
-  check filesystem data with path /dev/sdf
-    if failed permission 660 then alert
-    if failed uid root then alert
-    if failed gid disk then alert
-    if space usage > 80% for 5 times within 15 cycles then alert
+  #check filesystem data with path /dev/sdf
+  #  if failed permission 660 then alert
+  #  if failed uid root then alert
+  #  if failed gid disk then alert
+  #  if space usage > 80% for 5 times within 15 cycles then alert
 
   # always check the local redis
   check process redis with pidfile /var/run/redis/redis.pid

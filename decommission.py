@@ -36,6 +36,12 @@ except Exception as e:
 device = "/dev/sdf"
 mount = "/var/lib/redis"
 
+# we are going to work with local files, we need our path
+path = os.path.dirname(os.path.abspath(__file__))
+
+def delete_monitor():
+	os.system( "rm {0}/etc/monit/data".format(path))
+
 def decommission(key, access, cluster, persistence="no"):
 	events = Events(key, access, cluster)
 	node = Host(cluster, events).get_node()
@@ -54,6 +60,8 @@ def decommission(key, access, cluster, persistence="no"):
 		log('and now a snapshot', 'info')
 		snapshot = backup.make_snapshot(key, access, cluster, 'monthly')
 		administration.add_snapshot(key, access, cluster, snapshot)
+
+		delete_monitor()
 
 	# we don't have to get rid any the volume, it is deleted on termination
 

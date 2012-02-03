@@ -57,12 +57,9 @@ class Cluster:
 
 		sdb = SDBConnection(key, access, region=region_info)
 
-		self.domain = sdb.lookup(cluster, True)
-		if self.domain == None:
-			sdb.create_domain(cluster)
-			self.domain = sdb.lookup(cluster, True)
+		self.domain = sdb.create_domain(cluster)
 
-		self.metadata = self.domain.get_item('metadata', True)
+		self.metadata = self.domain.get_item('metadata', consistent_read=True)
 		if None == self.metadata:
 			self.metadata = self.domain.new_item('metadata')
 
@@ -74,6 +71,7 @@ class Cluster:
 		return self.domain.name
 
 	def add_node(self, node, endpoint):
+		self.metadata = self.domain.new_item('metadata')
 		try:
 			head = self.metadata['master']
 		except:
@@ -111,6 +109,7 @@ class Cluster:
 		return False
 
 	def delete_node(self, node):
+		self.metadata = self.domain.new_item('metadata')
 		head = self.metadata['master']
 		tail = self.metadata['slave']
 
@@ -146,6 +145,7 @@ class Cluster:
 	# looses connection, it can blame its master, and start searching for
 	# a new master (or become THE master).
 	def incarcerate_node(self, node):
+		self.metadata = self.domain.new_item('metadata')
 		head = self.metadata['master']
 		tail = self.metadata['slave']
 
@@ -189,6 +189,7 @@ class Cluster:
 			return None
 
 	def get_master(self, node=None):
+		self.metadata = self.domain.new_item('metadata')
 		if node == None or node == "":
 			return self.metadata['master']
 
@@ -198,6 +199,7 @@ class Cluster:
 			return None
 
 	def get_slave(self, node=None):
+		self.metadata = self.domain.new_item('metadata')
 		if node == None or node == "":
 			return self.metadata['slave']
 

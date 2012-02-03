@@ -54,12 +54,24 @@ component = os.path.basename(sys.argv[0])
 def log(message, logging='warning'):
 	events.log(node, component, message, logging)
 
+# we are going to work with local files, we need our path
+path = os.path.dirname(os.path.abspath(__file__))
+
 def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=None):
 	log('start provisioning', 'info')
 	# ec2 is region specific
 	region_info = RegionInfo(name=region,
 							endpoint="ec2.{0}.amazonaws.com".format(region))
 	ec2 = EC2Connection(key, access, region=region_info)
+
+	def add_monitor(device="/dev/sdf", name="main"):
+		f = open( "{0}/etc/monit/{1}".format(path, name), "w")
+		f.write("  check filesystem {0} with path {1}".format(name, device))
+		f.write("   if failed permission 660 then alert")
+		f.write("   if failed uid root then alert")
+		f.write("   if failed gid disk then alert")
+		f.write("   if space usage > 80% for 5 times within 15 cycles then alert")
+		f.close()
 
 	def create_device(snapshot=None):
 		log('getting a device', 'info')
@@ -98,6 +110,8 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 			log('growing the filesystem', 'info')
 			os.system("/usr/sbin/xfs_growfs {0}".format(mount))
 
+			add_monitor(device, 'data')
+
 		log('volume {0} is attached to {1} and mounted ({2}) and ready for use'.format(volume_id, device, mount), 'info')
 		return volume_id
 
@@ -105,9 +119,6 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 		log('prepare the environment', 'info')
 		# from this point we are sure we don't have to be careful
 		# with local files/devices/disks/etc
-
-		# we are going to work with local files, we need our path
-		path = os.path.dirname(os.path.abspath(__file__))
 
 		dst = "/etc/redis/redis.conf"
 		redis = "{0}/etc/redis/{1}.conf".format(path, persistence)

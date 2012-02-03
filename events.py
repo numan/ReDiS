@@ -30,6 +30,9 @@ from boto.sdb.regioninfo import RegionInfo
 # REDIS LOGGING
 #
 class Events:
+	def __domain(self, sdb, name):
+		return sdb.create_domain(name)
+
 	def __init__(self, key, access, cluster):
 		try:
 			url = "http://169.254.169.254/latest/meta-data/"
@@ -45,7 +48,7 @@ class Events:
 		endpoint = "sdb.{0}.amazonaws.com".format(region)
 		region_info = RegionInfo(name=region, endpoint=endpoint)
 
-		sdb = SDBConnection(key, access, region=region_info)
+		self.sdb = SDBConnection(key, access, region=region_info)
 
 		try:
 			self.logging = userdata['logging']
@@ -54,16 +57,14 @@ class Events:
 
 		self.events = "events.{0}".format(cluster)
 
-		self.domain = sdb.lookup(self.events, True)
-		if self.domain == None:
-			sdb.create_domain(self.events)
-			self.domain = sdb.lookup(self.events, True)
+		domain = self.__domain(self.sdb, self.events)
 
-			auto_increment = self.domain.new_item('auto-increment')
-			auto_increment.add_value('value',0)
-			auto_increment.save()
+		auto_increment = domain.new_item('auto-increment')
+		auto_increment.add_value('value',0)
+		auto_increment.save(replace=True)
 
 	def log(self, node, component, message, logging=None):
+		domain = self.__domain(self.sdb, self.events)
 		if None == logging:
 			logging = self.logging
 
@@ -71,7 +72,7 @@ class Events:
 			increment = self.increment()
 
 			now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-			new = self.domain.new_item(increment)
+			new = domain.new_item(increment)
 			new.add_value('logging', logging)
 			new.add_value('component', component)
 			new.add_value('message', message)
@@ -82,11 +83,12 @@ class Events:
 			return increment
 
 	def increment(self):
+		domain = self.__domain(self.sdb, self.events)
 		incremented = False
 		while not incremented:
-			value = int(self.domain.get_item('auto-increment', True)['value'])
+			value = int(domain.get_item('auto-increment', True)['value'])
 			try:
-				self.domain.put_attributes('auto-increment',
+				domain.put_attributes('auto-increment',
 										{'value' : value + 1},
 										expected_value=['value', value])
 
@@ -98,6 +100,7 @@ class Events:
 		return value
 
 	def purge(self, days=7):
+		domain = self.__domain(self.sdb, self.events)
 		# by default purge everything older than a week
 		seconds = 24 * 60 * 60
 		form = "%Y-%m-%d %H:%M:%S"
@@ -105,17 +108,18 @@ class Events:
 		timestamp = strftime(form, gmtime(time() - int(days) * seconds))
 
 		select = "select * from `{0}` where itemName() != 'auto-increment' and created < '{1}'"
-		events = self.domain.select(select.format(self.domain.name, timestamp))
+		events = domain.select(select.format(domain.name, timestamp))
 		for event in events:
-			self.domain.delete_item(event)
+			domain.delete_item(event)
 
 		return True
 
 	def tail(self, limit=10):
+		domain = self.__domain(self.sdb, self.events)
 		now = strftime("%Y-%m-%d %H:%M:%S", gmtime(time()))
 
 		select = "select * from `{0}` where itemName() != 'auto-increment' and created < '{1}' order by created desc limit {2}"
-		events = self.domain.select(select.format(self.domain.name, now, limit))
+		events = domain.select(select.format(domain.name, now, limit))
 		msg = ""
 
 		for event in events:
@@ -131,13 +135,14 @@ class Events:
 		return msg.rstrip("\n")
 
 	def reset(self):
+		domain = self.__domain(self.sdb, self.events)
 		# first delete all existing items
 		select = "select * from `{0}` where itemName() != 'auto-increment'"
-		events = self.domain.select(select.format(self.domain.name))
+		events = domain.select(select.format(domain.name))
 		for event in events:
-			self.domain.delete_item(event)
+			domain.delete_item(event)
 
-		return self.domain.put_attributes('auto-increment', {'value' : 0})
+		return domain.put_attributes('auto-increment', {'value' : 0})
 
 if __name__ == '__main__':
 	key = os.environ['EC2_KEY_ID']

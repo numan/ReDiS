@@ -38,9 +38,7 @@ region_info = RegionInfo(name=region,endpoint="sdb.{0}.amazonaws.com".format(reg
 def set_cluster_metadata(key, access, cluster):
 	sdb = SDBConnection(key, access, region=region_info)
 
-	domain = sdb.lookup(cluster, True)
-	if domain == None:
-		domain = sdb.create_domain(cluster)
+	domain = sdb.create_domain(cluster)
 
 	# set the basic values in the 'master' record
 	metadata = domain.new_item('metadata')
@@ -86,18 +84,14 @@ def set_cluster_metadata(key, access, cluster):
 def get_cluster_metadata(key, access, cluster):
 	sdb = SDBConnection(key, access, region=region_info)
 
-	domain = sdb.lookup(cluster, True)
-	if domain == None:
-		domain = sdb.create_domain(cluster)
+	domain = sdb.create_domain(cluster)
 
 	return domain.get_item('metadata', True)
 
 def set_RDB(key, access, cluster, location):
 	sdb = SDBConnection(key, access, region=region_info)
 
-	domain = sdb.lookup(cluster, True)
-	if domain == None:
-		domain = sdb.create_domain(cluster)
+	domain = sdb.create_domain(cluster)
 
 	# add the latest rdb (for automatic restores)
 	latest = domain.new_item('rdb')
@@ -109,18 +103,17 @@ def set_RDB(key, access, cluster, location):
 def get_latest_RDB(key, access, cluster):
 	sdb = SDBConnection(key, access, region=region_info)
 
-	domain = sdb.lookup(cluster, True)
-	if domain == None:
-		domain = sdb.create_domain(cluster)
+	domain = sdb.create_domain(cluster)
 
-	return domain.get_item('rdb', True)['rdb']
+	try:
+		return domain.get_item('rdb', True)['rdb']
+	except:
+		return None
 
 def add_snapshot(key, access, cluster, snapshot):
 	sdb = SDBConnection(key, access, region=region_info)
 
-	domain = sdb.lookup(cluster, True)
-	if domain == None:
-		domain = sdb.create_domain(cluster)
+	domain = sdb.create_domain(cluster)
 
 	now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 	# add the latest rdb (for automatic restores)
@@ -145,27 +138,24 @@ def add_snapshot(key, access, cluster, snapshot):
 def get_latest_snapshot(key, access, cluster):
 	sdb = SDBConnection(key, access, region=region_info)
 
-	domain = sdb.lookup(cluster, True)
-	if domain == None:
-		domain = sdb.create_domain(cluster)
+	domain = sdb.create_domain(cluster)
 
-	return domain.get_item('snapshot', True)['snapshot']
+	try:
+		return domain.get_item('snapshot', True)['snapshot']
+	except:
+		return None
 
 def delete_snapshot(key, access, cluster, snapshot_id):
 	sdb = SDBConnection(key, access, region=region_info)
 
-	domain = sdb.lookup(cluster, True)
-	if domain == None:
-		domain = sdb.create_domain(cluster)
+	domain = sdb.create_domain(cluster)
 
 	return domain.delete_item(domain.get_item(snapshot_id))
 
 def get_expired_snapshots(key, access, cluster):
 	sdb = SDBConnection(key, access, region=region_info)
 
-	domain = sdb.lookup(cluster, True)
-	if domain == None:
-		domain = sdb.create_domain(cluster)
+	domain = sdb.create_domain(cluster)
 
 	now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 	select = "select * from `{0}` where itemName() > 'snap-' and itemName() != 'snapshot' and expires < '{1}'".format(cluster, now)
@@ -175,9 +165,7 @@ def get_expired_snapshots(key, access, cluster):
 def get_all_snapshots(key, access, cluster):
 	sdb = SDBConnection(key, access, region=region_info)
 
-	domain = sdb.lookup(cluster, True)
-	if domain == None:
-		domain = sdb.create_domain(cluster)
+	domain = sdb.create_domain(cluster)
 
 	now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 	select = "select * from `{0}` where itemName() > 'snap-' and itemName() != 'snapshot'".format(cluster)
@@ -187,9 +175,7 @@ def get_all_snapshots(key, access, cluster):
 def get_identity(key, access, cluster):
 	sdb = SDBConnection(key, access, region=region_info)
 
-	domain = sdb.lookup(cluster, True)
-	if domain == None:
-		domain = sdb.create_domain(cluster)
+	domain = sdb.create_domain(cluster)
 
 	slave_id = hashlib.md5(public_hostname).hexdigest()[:8]
 	slave_fqdn = "{0}.{1}".format(slave_id, cluster)
