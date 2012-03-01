@@ -119,6 +119,40 @@ class Monitor:
 				values.append(items[item]['expires'])
 				units.append('Count')
 
+				# and now add some info on the keys
+				nr = item.lstrip('db')
+				db = redis.StrictRedis(host='localhost', port=6379, db=nr)
+				keys = db.keys('*')
+				for key in keys:
+					key = key.split('.')[-1]
+					key_type = db.type(key)
+
+					if key_type == "list":
+						llen = db.llen(key)
+						names.append("{0}_{1}_llen".format(item, key))
+						values.append(llen)
+						units.append('Count')
+					elif key_type == "hash":
+						hlen = db.hlen(key)
+						names.append("{0}_{1}_hlen".format(item, key))
+						values.append(hlen)
+						units.append('Count')
+					elif key_type == "set":
+						scard = db.scard(key)
+						names.append("{0}_{1}_scard".format(item, key))
+						values.append(scard)
+						units.append('Count')
+					elif key_type == "zset":
+						zcard = db.zcard(key)
+						names.append("{0}_{1}_zcard".format(item, key))
+						values.append(zcard)
+						units.append('Count')
+					elif key_type == "string":
+						strlen = db.strlen(key)
+						names.append("{0}_{1}_strlen".format(item, key))
+						values.append(strlen)
+						units.append('Count')
+
 		# pub/sub
 		names.append('pubsub_channels')
 		values.append(items['pubsub_channels'])
