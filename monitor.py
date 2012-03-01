@@ -247,28 +247,28 @@ class Monitor:
 	def put(self):
 		# first get all we need
 		[names, values, units, dimensions] = self.collect()
+		while len(names) > 0:
+			names20 = names[:20]
+			values20 = values[:20]
+			units20 = units[:20]
 
-		# we can't send all at once, only 20 at a time
-		# first aggregated over all
-		self.__log('put aggregated ReDiS metrics data', 'info')
-		result1 = self.cloudwatch.put_metric_data(self.namespace,
-										names[:20], value=values[:20],
-										unit=units[:20])
-		result2 = self.cloudwatch.put_metric_data(self.namespace,
-										names[20:], value=values[20:],
-										unit=units[20:])
-		for dimension in dimensions:
-			self.__log('put ReDiS metrics data for {0}'.format(dimensions[dimension]), 'info')
-			dimension = { dimension : dimensions[dimension] }
-			result1 = self.cloudwatch.put_metric_data(self.namespace,
-										names[:20], value=values[:20],
-										unit=units[:20],
-										dimensions=dimension)
-			result2 = self.cloudwatch.put_metric_data(self.namespace,
-										names[20:], value=values[20:],
-										unit=units[20:],
-										dimensions=dimension)
-		return (result1 and result2)
+			# we can't send all at once, only 20 at a time
+			# first aggregated over all
+			self.__log('put aggregated ReDiS metrics data', 'info')
+			result = self.cloudwatch.put_metric_data(self.namespace,
+									names20, value=values20, unit=units20)
+			for dimension in dimensions:
+				self.__log('put ReDiS metrics data for {0}'.format(dimensions[dimension]), 'info')
+				dimension = { dimension : dimensions[dimension] }
+				result &= self.cloudwatch.put_metric_data(self.namespace,
+									names20, value=values20, unit=units20,
+									dimensions=dimension)
+
+			del names[:20]
+			del values[:20]
+			del units[:20]
+
+		return result
 	
 	def metrics(self):
 		return self.cloudwatch.list_metrics()
