@@ -33,7 +33,11 @@ try:
 except:
 	exit("We should be getting user-data here...")
 
-region_info = RegionInfo(name=region,endpoint="sdb.{0}.amazonaws.com".format(region))
+#us-east-1 breaks the convention. See http://docs.amazonwebservices.com/general/latest/gr/rande.html#sdb_region
+endpoint = "sdb.{0}.amazonaws.com".format(region) if region != "us-east-1" \
+	else "sdb.amazonaws.com"
+
+region_info = RegionInfo(name=region, endpoint=endpoint)
 
 def set_cluster_metadata(key, access, cluster):
 	sdb = SDBConnection(key, access, region=region_info)
