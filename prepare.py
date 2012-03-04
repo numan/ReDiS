@@ -197,6 +197,8 @@ if __name__ == '__main__':
 		rdb = None
 
 	size = 3 * ( meminfo()['MemTotal'] / ( 1024 * 1024 ) )
+	#set a default size of 5 gigs just incase we are using a micro instance. Usefult for playing around with this project
+	size = 5 if size == 0 else size	
 
 	provision(sys.argv[1], sys.argv[2], cluster, size,
 				persistence=persistence, snapshot=snapshot, rdb=rdb)
