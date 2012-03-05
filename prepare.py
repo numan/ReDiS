@@ -159,7 +159,7 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 				backup.restore(key, access, cluster, rdb)
 
 			latest = administration.get_latest_RDB(key, access, cluster)
-			if "" != latest:
+			if "" != latest or latest is not None:
 				log('restore rdb {0}/{1}'.format(cluster, latest), 'info')
 				backup.restore(key, access, cluster, latest)
 
