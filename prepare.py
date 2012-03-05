@@ -38,7 +38,8 @@ except Exception as e:
 	print e
 	exit( "We couldn't get user-data or other meta-data...")
 
-device = "/dev/xvdf"
+device = "/dev/sdf"
+device_mounted_name = "/dev/xvdf"
 mount = "/var/lib/redis"
 
 # what is the domain to work with
@@ -89,7 +90,7 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 
 			# we can't continue without a properly attached device
 			log('waiting for ' + device, 'info')
-			os.system("while [ ! -b {0} ] ; do /bin/true ; done".format(device))
+			os.system("while [ ! -b {0} ] ; do /bin/true ; done".format(device_mounted_name))
 
 			# make sure the volume is deleted upon termination
 			# should also protect from disaster like loosing an instance
@@ -101,16 +102,16 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 			if snapshot == "" or None == snapshot:
 				log('creating a filesystem', 'info')
 				# first create filesystem
-				os.system("/sbin/mkfs.xfs {0}".format(device))
+				os.system("/sbin/mkfs.xfs {0}".format(device_mounted_name))
 
 			log('mounting the filesystem', 'info')
 			# mount, but first wait until the device is ready
-			os.system("/bin/mount -t xfs -o defaults {0} {1}".format(device, mount))
+			os.system("/bin/mount -t xfs -o defaults {0} {1}".format(device_mounted_name, mount))
 			# and grow (if necessary)
 			log('growing the filesystem', 'info')
 			os.system("/usr/sbin/xfs_growfs {0}".format(mount))
 
-			add_monitor(device, 'data')
+			add_monitor(device_mouted_name, 'data')
 
 		log('volume {0} is attached to {1} and mounted ({2}) and ready for use'.format(volume_id, device, mount), 'info')
 		return volume_id
