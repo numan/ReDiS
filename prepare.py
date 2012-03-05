@@ -38,7 +38,7 @@ except Exception as e:
 	print e
 	exit( "We couldn't get user-data or other meta-data...")
 
-device = "/dev/sdf"
+device = "/dev/xvdf"
 mount = "/var/lib/redis"
 
 # what is the domain to work with
