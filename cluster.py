@@ -71,7 +71,6 @@ class Cluster:
 		return self.domain.name
 
 	def add_node(self, node, endpoint):
-		self.metadata = self.domain.new_item('metadata')
 		try:
 			head = self.metadata['master']
 		except:
