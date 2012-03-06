@@ -110,7 +110,6 @@ class Cluster:
 		return False
 
 	def delete_node(self, node):
-		self.metadata = self.domain.new_item('metadata')
 		head = self.metadata['master']
 		tail = self.metadata['slave']
 
@@ -146,7 +145,6 @@ class Cluster:
 	# looses connection, it can blame its master, and start searching for
 	# a new master (or become THE master).
 	def incarcerate_node(self, node):
-		self.metadata = self.domain.new_item('metadata')
 		head = self.metadata['master']
 		tail = self.metadata['slave']
 
@@ -190,7 +188,6 @@ class Cluster:
 			return None
 
 	def get_master(self, node=None):
-		self.metadata = self.domain.new_item('metadata')
 		if node == None or node == "":
 			return self.metadata['master']
 
@@ -200,7 +197,6 @@ class Cluster:
 			return None
 
 	def get_slave(self, node=None):
-		self.metadata = self.domain.new_item('metadata')
 		if node == None or node == "":
 			return self.metadata['slave']
 
