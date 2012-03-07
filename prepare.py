@@ -96,7 +96,7 @@ def provision(key, access, cluster, size, persistence="no", snapshot=None, rdb=N
 			# should also protect from disaster like loosing an instance
 			# (it doesn't work with boto, so we do it 'outside')
 			log('set delete-on-termination', 'info')
-			os.system("/usr/bin/ec2-modify-instance-attribute --block-device-mapping \"{0}=:true\" {1} --region {2}".format(device, instance_id, region))
+			#os.system("/usr/bin/ec2-modify-instance-attribute --block-device-mapping \"{0}=:true\" {1} --region {2}".format(device, instance_id, region))
 
 			# if we start from snapshot we are almost done
 			if snapshot == "" or None == snapshot:
